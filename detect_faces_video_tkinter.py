@@ -24,10 +24,6 @@ def changestateEyes():
 		detecteyes=True
 	return detecteyes
 
-
-
-
-
 width, height = 800, 600
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
