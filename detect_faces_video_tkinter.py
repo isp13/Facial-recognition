@@ -7,7 +7,7 @@ from tkinter import *
 detectface=True
 detectsmile=True
 detecteyes=True
-
+blur=False
 def changestateSmile():
 	global detectsmile
 	if detectsmile:
@@ -23,6 +23,15 @@ def changestateEyes():
 	else:
 		detecteyes=True
 	return detecteyes
+
+def Blur():
+    global blur
+    if blur:
+        blur=False
+    else:
+        blur=True
+    return blur
+
 
 width, height = 800, 600
 cap = cv2.VideoCapture(0)
@@ -44,6 +53,9 @@ button.pack()
 button1 = Button(master=root, text='eyes', command= lambda: changestateEyes())
 button1.pack()
 
+button2 = Button(master=root, text='Blur', command= lambda: Blur())
+button2.pack(side="top")
+
 def show_frame():
 
     ret, img = cap.read()  
@@ -52,26 +64,26 @@ def show_frame():
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
   
     # Detects faces of different sizes in the input image 
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 7)
   	
     for (x,y,w,h) in faces: 
         # To draw a rectangle in a face  
-        cv2.rectangle(img,(x,y),(x+w,y+h),(255,255,0),2)
+        cv2.rectangle(img,(x,y),(x+w,y+h),(205,255,0),1)
         roi_gray = gray[y:y+h, x:x+w] 
         roi_color = img[y:y+h, x:x+w] 
   
         # Detects eyes of different sizes in the input image 
-        eyes = eye_cascade.detectMultiScale(roi_gray, 1.3, 7)  
+        eyes = eye_cascade.detectMultiScale(roi_gray, 1.3, 17)  
   
         #To draw a rectangle in eyes 
         for (ex,ey,ew,eh) in eyes:
         	if detecteyes:
-        		cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,255),2) 
+        		cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,255),1) 
 
         smile = smile_cascade.detectMultiScale(
             roi_gray,
             scaleFactor=1.3,
-            minNeighbors=15,
+            minNeighbors=25,
             minSize=(15, 15),
             flags=cv2.CASCADE_SCALE_IMAGE
         )
@@ -79,14 +91,16 @@ def show_frame():
         	if detectsmile:
         		cv2.rectangle(roi_color, (x, y), (x + w, y + h), (0, 0, 255), 1)
 
-
+    if blur:
+        print("Blurring")
+        img=cv2.bilateralFilter(img,15,75,75)
     cv2image = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)
     img = PIL.Image.fromarray(cv2image)
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
     lmain.configure(image=imgtk)
     lmain.after(10, show_frame)
-    print(detectsmile)
+    
 
 show_frame()
 root.mainloop()
